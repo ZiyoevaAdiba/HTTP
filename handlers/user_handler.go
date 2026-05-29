@@ -59,9 +59,8 @@ func (h *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	// decode the user from the body
-	user := models.User{}
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	user, err := models.DecodeUser(r)
+	if err != nil {
 		errDTO := models.ErrorDTO{Message: err.Error()}
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 		return
@@ -83,7 +82,6 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("update")
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		errDTO := models.ErrorDTO{Message: err.Error()}
@@ -91,8 +89,8 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := models.User{}
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	user, err := models.DecodeUser(r)
+	if err != nil {
 		errDTO := models.ErrorDTO{Message: err.Error()}
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 		return
