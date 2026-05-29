@@ -14,6 +14,12 @@ type UserStorage struct {
 	FileName string
 }
 
+func New(filename string) *UserStorage {
+	return &UserStorage{
+		FileName: filename,
+	}
+}
+
 func (s *UserStorage) GetAll() ([]models.User, error) {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()

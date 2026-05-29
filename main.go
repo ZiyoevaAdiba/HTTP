@@ -10,13 +10,9 @@ import (
 
 func main() {
 
-	st := &storage.UserStorage{
-		FileName: "data/users.json",
-	}
+	userStorage := storage.New("data/users.json")
 
-	h := &handlers.UserHandler{
-		Storage: st,
-	}
+	userHandler := handlers.New(userStorage)
 
 	mux := http.NewServeMux()
 
@@ -24,10 +20,10 @@ func main() {
 		middleware.Auth(mux),
 	)
 
-	mux.HandleFunc("GET /users", h.GetUsers)
-	mux.HandleFunc("GET /users/{id}", h.GetUserByID)
-	mux.HandleFunc("POST /users", h.CreateUser)
-	mux.HandleFunc("PUT /users/{id}", h.UpdateUser)
+	mux.HandleFunc("GET /users", userHandler.GetUsers)
+	mux.HandleFunc("GET /users/{id}", userHandler.GetUserByID)
+	mux.HandleFunc("POST /users", userHandler.CreateUser)
+	mux.HandleFunc("PUT /users/{id}", userHandler.UpdateUser)
 
 	err := http.ListenAndServe(":8080", handler)
 	if err != nil {

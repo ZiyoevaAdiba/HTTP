@@ -12,12 +12,18 @@ import (
 )
 
 type UserHandler struct {
-	Storage *storage.UserStorage
+	storage *storage.UserStorage
+}
+
+func New(storage *storage.UserStorage) *UserHandler {
+	return &UserHandler{
+		storage: storage,
+	}
 }
 
 func (h *UserHandler) GetUsers(w http.ResponseWriter, _ *http.Request) {
 	// getting all users from the storage
-	allUsers, err := h.Storage.GetAll()
+	allUsers, err := h.storage.GetAll()
 	if err != nil {
 		errDTO := models.ErrorDTO{Message: err.Error()}
 		http.Error(w, errDTO.ToString(), http.StatusInternalServerError)
@@ -39,7 +45,7 @@ func (h *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.Storage.GetByID(id)
+	user, err := h.storage.GetByID(id)
 	if err != nil {
 		errDTO := models.ErrorDTO{Message: err.Error()}
 
@@ -66,7 +72,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.Storage.Create(user); err != nil {
+	if err := h.storage.Create(user); err != nil {
 		errDTO := models.ErrorDTO{Message: err.Error()}
 
 		if errors.Is(err, models.ErrUserAlreadyExists) {
@@ -96,7 +102,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.Storage.Update(id, user); err != nil {
+	if err := h.storage.Update(id, user); err != nil {
 		errDTO := models.ErrorDTO{Message: err.Error()}
 		if errors.Is(err, models.ErrUserNotFound) {
 			http.Error(w, errDTO.ToString(), http.StatusNotFound)
