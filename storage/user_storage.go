@@ -36,7 +36,7 @@ func (s *UserStorage) GetByID(id int) (*models.User, error) {
 		}
 	}
 
-	return nil, errors.New("user not found")
+	return nil, models.ErrUserNotFound
 }
 
 func (s *UserStorage) Create(user models.User) error {
@@ -50,7 +50,7 @@ func (s *UserStorage) Create(user models.User) error {
 
 	for _, existingUser := range users {
 		if existingUser.ID == user.ID {
-			return errors.New("user already exist")
+			return models.ErrUserAlreadyExists
 		}
 	}
 	users = append(users, user)

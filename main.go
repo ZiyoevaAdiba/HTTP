@@ -20,19 +20,17 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.Handle(
-		"/users",
-		middleware.Logging(
-			middleware.Auth(
-				http.HandlerFunc(h.GetUsers),
-			),
-		),
+	handler := middleware.Logging(
+		middleware.Auth(mux),
 	)
 
-	// TODO:
-	// POST /users
-	// GET /users/{id}
-	// PUT /users/{id}
+	mux.HandleFunc("GET /users", h.GetUsers)
+	mux.HandleFunc("GET /users/{id}", h.GetUserByID)
+	mux.HandleFunc("POST /users", h.CreateUser)
+	mux.HandleFunc("PUT /users/{id}", h.UpdateUser)
 
-	http.ListenAndServe(":8080", mux)
+	err := http.ListenAndServe(":8080", handler)
+	if err != nil {
+		return
+	}
 }
