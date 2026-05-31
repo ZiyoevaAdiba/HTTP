@@ -1,8 +1,10 @@
 package handlers
 
 import (
-	"HTTP/models"
-	"HTTP/storage"
+	"go.uber.org/zap"
+	"httpProject/models"
+	"httpProject/pkg/Logger"
+	"httpProject/storage"
 
 	"encoding/json"
 	"errors"
@@ -32,6 +34,9 @@ func (h *UserHandler) GetUsers(w http.ResponseWriter, _ *http.Request) {
 
 	// encoding all users to JSON and writing the response
 	if err := json.NewEncoder(w).Encode(allUsers); err != nil {
+		Logger.L.Error("Could not write response",
+			zap.String("error msg", err.Error()))
+
 		fmt.Println("error writing response", err)
 		return
 	}
@@ -40,6 +45,8 @@ func (h *UserHandler) GetUsers(w http.ResponseWriter, _ *http.Request) {
 func (h *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
+		Logger.L.Error("Could not parse id from path")
+
 		errDTO := models.ErrorDTO{Message: err.Error()}
 		http.Error(w, errDTO.ToString(), http.StatusBadRequest)
 		return
@@ -59,6 +66,9 @@ func (h *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(user); err != nil {
+		Logger.L.Error("Could not write response",
+			zap.String("error msg", err.Error()))
+
 		fmt.Println("error writing response", err)
 		return
 	}

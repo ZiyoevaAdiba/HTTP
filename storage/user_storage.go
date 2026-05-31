@@ -3,10 +3,12 @@ package storage
 import (
 	"encoding/json"
 	"errors"
+	"go.uber.org/zap"
+	"httpProject/pkg/Logger"
 	"os"
 	"sync"
 
-	"HTTP/models"
+	"httpProject/models"
 )
 
 type UserStorage struct {
@@ -24,7 +26,11 @@ func (s *UserStorage) GetAll() ([]models.User, error) {
 	s.Mu.Lock()
 	defer s.Mu.Unlock()
 
-	return readUsersFromFile(s.FileName)
+	users, err := readUsersFromFile(s.FileName)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 func (s *UserStorage) GetByID(id int) (*models.User, error) {
@@ -42,6 +48,8 @@ func (s *UserStorage) GetByID(id int) (*models.User, error) {
 		}
 	}
 
+	Logger.L.Error("User Not Found", zap.Int("user_id:", id))
+
 	return nil, models.ErrUserNotFound
 }
 
@@ -56,6 +64,7 @@ func (s *UserStorage) Create(user models.User) error {
 
 	for _, existingUser := range users {
 		if existingUser.ID == user.ID {
+			Logger.L.Error("User Already Exists", zap.Int("user_id:", user.ID))
 			return models.ErrUserAlreadyExists
 		}
 	}
@@ -79,18 +88,23 @@ func (s *UserStorage) Update(id int, user models.User) error {
 			return writeToFile(s.FileName, users)
 		}
 	}
-
+	Logger.L.Error("User Not Found", zap.Int("user_id:", id))
 	return errors.New("user not found")
 }
 
 func readUsersFromFile(name string) ([]models.User, error) {
 	data, err := os.ReadFile(name)
 	if err != nil {
+		Logger.L.Error("Error reading from file", zap.String("fileName:", name))
+
 		return nil, err
 	}
 
 	var users []models.User
 	if err := json.Unmarshal(data, &users); err != nil {
+		Logger.L.Error("Error while unmarshalling data from file",
+			zap.String("fileName:", name))
+
 		return nil, err
 	}
 
@@ -100,8 +114,13 @@ func readUsersFromFile(name string) ([]models.User, error) {
 func writeToFile(name string, users []models.User) error {
 	data, err := json.MarshalIndent(users, "", "	")
 	if err != nil {
+		Logger.L.Error("Error while converting data to json")
 		return err
 	}
 
-	return os.WriteFile(name, data, 0644)
+	if err := os.WriteFile(name, data, 0644); err != nil {
+		Logger.L.Error("Error while writing to file", zap.String("fileName:", name))
+		return err
+	}
+	return nil
 }

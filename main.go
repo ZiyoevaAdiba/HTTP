@@ -1,14 +1,16 @@
 package main
 
 import (
+	"httpProject/pkg/Logger"
 	"net/http"
 
-	"HTTP/handlers"
-	"HTTP/middleware"
-	"HTTP/storage"
+	"httpProject/handlers"
+	"httpProject/middleware"
+	"httpProject/storage"
 )
 
 func main() {
+	Logger.Init(true)
 
 	userStorage := storage.New("data/users.json")
 
